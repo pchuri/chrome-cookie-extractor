@@ -1,0 +1,50 @@
+{
+  "name": "chrome-cookie-extractor",
+  "version": "1.0.0",
+  "description": "Extract and decrypt Chrome cookies with curl integration - includes auth-curl command for authenticated requests",
+  "main": "dist/index.js",
+  "bin": {
+    "chrome-cookies": "dist/cli.js",
+    "auth-curl": "dist/auth-curl.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/cli.js"
+  },
+  "keywords": [
+    "chrome",
+    "cookies",
+    "curl",
+    "browser",
+    "authentication",
+    "decrypt",
+    "extraction",
+    "cli",
+    "auth-curl",
+    "netscape",
+    "json"
+  ],
+  "author": "Chrome Cookie Extractor",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pchuri/chrome-cookie-extractor.git"
+  },
+  "homepage": "https://github.com/pchuri/chrome-cookie-extractor#readme",
+  "bugs": {
+    "url": "https://github.com/pchuri/chrome-cookie-extractor/issues"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "dependencies": {
+    "sqlite3": "^5.1.6",
+    "chalk": "^4.1.2",
+    "commander": "^9.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.9",
+    "typescript": "^4.8.4"
+  }
+}
