@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/pchuri/chrome-cookie-extractor/compare/v1.0.1...v1.1.0) (2025-06-30)
+
+
+### Features
+
+* trigger new clean release without strange assets ([ff509d3](https://github.com/pchuri/chrome-cookie-extractor/commit/ff509d3c05c693356a39a330ed1210b15cfd777c))
+
 ## [1.0.1](https://github.com/pchuri/chrome-cookie-extractor/compare/v1.0.0...v1.0.1) (2025-06-30)
 
 
