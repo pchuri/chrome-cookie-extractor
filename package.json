@@ -1,6 +1,6 @@
 {
   "name": "chrome-cookie-extractor",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Extract and decrypt Chrome cookies with curl integration - includes auth-curl command for authenticated requests",
   "main": "dist/index.js",
   "bin": {

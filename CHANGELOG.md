@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/pchuri/chrome-cookie-extractor/compare/v1.0.0...v1.0.1) (2025-06-30)
+
+
+### Bug Fixes
+
+* remove unnecessary release assets from GitHub releases ([29bdb1a](https://github.com/pchuri/chrome-cookie-extractor/commit/29bdb1a06ac0115576e7323a029101e445e2c1d2))
+
 # 1.0.0 (2025-06-30)
 
 
