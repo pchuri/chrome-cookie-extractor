@@ -3,7 +3,6 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import { ChromeCookieExtractor } from './extractor';
-import * as fs from 'fs';
 import * as os from 'os';
 
 const program = new Command();

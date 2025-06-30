@@ -121,7 +121,7 @@ program
       
       // Execute curl command and cleanup
       try {
-        const result = execSync(curlCommand, { 
+        execSync(curlCommand, { 
           encoding: 'utf8',
           stdio: options.output ? 'pipe' : 'inherit'
         });

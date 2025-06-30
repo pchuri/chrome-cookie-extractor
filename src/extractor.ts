@@ -54,14 +54,14 @@ export class ChromeCookieExtractor {
         }
         
         // Set busy timeout to handle locks
-        db.run("PRAGMA busy_timeout = 30000", (err) => {
+        db.run('PRAGMA busy_timeout = 30000', (err) => {
           if (err) {
             console.warn('Could not set busy timeout:', err);
           }
         });
         
         // Check table structure
-        db.all("PRAGMA table_info(cookies)", (err, rows: any[]) => {
+        db.all('PRAGMA table_info(cookies)', (err, rows: any[]) => {
           if (err) {
             db.close();
             reject(err);
@@ -149,7 +149,7 @@ export class ChromeCookieExtractor {
           }
           
           // Check table structure
-          db.all("PRAGMA table_info(cookies)", (err, rows: any[]) => {
+          db.all('PRAGMA table_info(cookies)', (err, rows: any[]) => {
             if (err) {
               db.close();
               reject(err);

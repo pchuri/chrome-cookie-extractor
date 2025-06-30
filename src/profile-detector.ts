@@ -13,17 +13,17 @@ export class ProfileDetector {
     let chromeBasePath: string;
     
     switch (platform) {
-      case Platform.DARWIN:
-        chromeBasePath = path.join(homeDir, 'Library/Application Support/Google/Chrome');
-        break;
-      case Platform.WIN32:
-        chromeBasePath = path.join(homeDir, 'AppData/Local/Google/Chrome/User Data');
-        break;
-      case Platform.LINUX:
-        chromeBasePath = path.join(homeDir, '.config/google-chrome');
-        break;
-      default:
-        throw new Error(`Unsupported platform: ${platform}`);
+    case Platform.DARWIN:
+      chromeBasePath = path.join(homeDir, 'Library/Application Support/Google/Chrome');
+      break;
+    case Platform.WIN32:
+      chromeBasePath = path.join(homeDir, 'AppData/Local/Google/Chrome/User Data');
+      break;
+    case Platform.LINUX:
+      chromeBasePath = path.join(homeDir, '.config/google-chrome');
+      break;
+    default:
+      throw new Error(`Unsupported platform: ${platform}`);
     }
 
     if (!fs.existsSync(chromeBasePath)) {
@@ -55,17 +55,17 @@ export class ProfileDetector {
     let braveBasePath: string;
     
     switch (platform) {
-      case Platform.DARWIN:
-        braveBasePath = path.join(homeDir, 'Library/Application Support/BraveSoftware/Brave-Browser');
-        break;
-      case Platform.WIN32:
-        braveBasePath = path.join(homeDir, 'AppData/Local/BraveSoftware/Brave-Browser/User Data');
-        break;
-      case Platform.LINUX:
-        braveBasePath = path.join(homeDir, '.config/BraveSoftware/Brave-Browser');
-        break;
-      default:
-        return [];
+    case Platform.DARWIN:
+      braveBasePath = path.join(homeDir, 'Library/Application Support/BraveSoftware/Brave-Browser');
+      break;
+    case Platform.WIN32:
+      braveBasePath = path.join(homeDir, 'AppData/Local/BraveSoftware/Brave-Browser/User Data');
+      break;
+    case Platform.LINUX:
+      braveBasePath = path.join(homeDir, '.config/BraveSoftware/Brave-Browser');
+      break;
+    default:
+      return [];
     }
 
     if (!fs.existsSync(braveBasePath)) {
