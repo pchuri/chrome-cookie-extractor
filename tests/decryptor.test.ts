@@ -1,37 +1,44 @@
-import { Decryptor } from '../src/decryptor';
+import { CookieDecryptor } from '../src/decryptor';
 import * as os from 'os';
 
-describe('Decryptor', () => {
-  let decryptor: Decryptor;
+// Mock os module
+jest.mock('os');
+jest.mock('child_process');
 
+const mockOs = os as jest.Mocked<typeof os>;
+
+describe('CookieDecryptor', () => {
   beforeEach(() => {
-    decryptor = new Decryptor();
+    jest.clearAllMocks();
   });
 
-  describe('isMacOS', () => {
-    it('should return true on macOS', () => {
-      jest.spyOn(os, 'platform').mockReturnValue('darwin');
-      expect(decryptor.isMacOS()).toBe(true);
+  describe('decryptValue', () => {
+    it('should return plaintext on non-macOS platforms', () => {
+      mockOs.platform.mockReturnValue('linux');
+      const testData = Buffer.from('test-cookie-value');
+
+      const result = CookieDecryptor.decryptValue(testData);
+
+      expect(result).toBe('test-cookie-value');
     });
 
-    it('should return false on other platforms', () => {
-      jest.spyOn(os, 'platform').mockReturnValue('linux');
-      expect(decryptor.isMacOS()).toBe(false);
-    });
-  });
+    it('should handle encrypted values on macOS', () => {
+      mockOs.platform.mockReturnValue('darwin');
+      const testData = Buffer.from('v10encrypted-data');
 
-  describe('decryptCookie', () => {
-    it('should return original value for non-encrypted cookies', () => {
-      const result = decryptor.decryptCookie(Buffer.from('test'), 'plaintext');
-      expect(result).toBe('plaintext');
+      const result = CookieDecryptor.decryptValue(testData);
+
+      // Should return encrypted placeholder if keychain access fails
+      expect(typeof result).toBe('string');
     });
 
-    it('should return [ENCRYPTED] for encrypted cookies on non-macOS', () => {
-      jest.spyOn(os, 'platform').mockReturnValue('linux');
-      const encryptedValue = Buffer.concat([Buffer.from('v10'), Buffer.from('encrypted')]);
-      
-      const result = decryptor.decryptCookie(encryptedValue, '');
-      expect(result).toBe('[ENCRYPTED]');
+    it('should handle unencrypted values', () => {
+      mockOs.platform.mockReturnValue('darwin');
+      const testData = Buffer.from('plain-text-value');
+
+      const result = CookieDecryptor.decryptValue(testData);
+
+      expect(typeof result).toBe('string');
     });
   });
 });

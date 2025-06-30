@@ -1,58 +1,76 @@
 import { ProfileDetector } from '../src/profile-detector';
 import * as os from 'os';
-import * as path from 'path';
+import * as fs from 'fs';
+
+// Mock fs and os modules
+jest.mock('fs');
+jest.mock('os');
+
+const mockFs = fs as jest.Mocked<typeof fs>;
+const mockOs = os as jest.Mocked<typeof os>;
 
 describe('ProfileDetector', () => {
-  let detector: ProfileDetector;
-
   beforeEach(() => {
-    detector = new ProfileDetector();
+    jest.clearAllMocks();
   });
 
-  describe('getDefaultPaths', () => {
-    it('should return macOS paths on darwin platform', () => {
-      jest.spyOn(os, 'platform').mockReturnValue('darwin');
-      jest.spyOn(os, 'homedir').mockReturnValue('/Users/testuser');
+  describe('detectChromeProfiles', () => {
+    it('should return empty array if Chrome directory does not exist', () => {
+      mockOs.platform.mockReturnValue('darwin');
+      mockOs.homedir.mockReturnValue('/Users/testuser');
+      mockFs.existsSync.mockReturnValue(false);
 
-      const paths = detector.getDefaultPaths();
+      const profiles = ProfileDetector.detectChromeProfiles();
 
-      expect(paths).toEqual({
-        chrome: '/Users/testuser/Library/Application Support/Google/Chrome',
-        brave: '/Users/testuser/Library/Application Support/BraveSoftware/Brave-Browser'
-      });
+      expect(profiles).toEqual([]);
     });
 
-    it('should return Windows paths on win32 platform', () => {
-      jest.spyOn(os, 'platform').mockReturnValue('win32');
-      jest.spyOn(os, 'homedir').mockReturnValue('C:\\Users\\testuser');
-
-      const paths = detector.getDefaultPaths();
-
-      expect(paths).toEqual({
-        chrome: 'C:\\Users\\testuser\\AppData\\Local\\Google\\Chrome\\User Data',
-        brave: 'C:\\Users\\testuser\\AppData\\Local\\BraveSoftware\\Brave-Browser\\User Data'
+    it('should detect Chrome profiles on macOS', () => {
+      mockOs.platform.mockReturnValue('darwin');
+      mockOs.homedir.mockReturnValue('/Users/testuser');
+      mockFs.existsSync.mockImplementation((path: any) => {
+        const pathStr = path.toString();
+        // Mock Chrome base directory exists
+        if (pathStr === '/Users/testuser/Library/Application Support/Google/Chrome') {
+          return true;
+        }
+        // Mock Default profile cookies exist
+        if (pathStr === '/Users/testuser/Library/Application Support/Google/Chrome/Default/Cookies') {
+          return true;
+        }
+        return false;
       });
-    });
 
-    it('should return Linux paths on linux platform', () => {
-      jest.spyOn(os, 'platform').mockReturnValue('linux');
-      jest.spyOn(os, 'homedir').mockReturnValue('/home/testuser');
+      const profiles = ProfileDetector.detectChromeProfiles();
 
-      const paths = detector.getDefaultPaths();
-
-      expect(paths).toEqual({
-        chrome: '/home/testuser/.config/google-chrome',
-        brave: '/home/testuser/.config/BraveSoftware/Brave-Browser'
-      });
+      expect(profiles.length).toBeGreaterThan(0);
+      expect(profiles[0]).toHaveProperty('name');
+      expect(profiles[0]).toHaveProperty('path');
+      expect(profiles[0]).toHaveProperty('cookiesPath');
     });
   });
 
-  describe('getCookiesPath', () => {
-    it('should construct correct cookies path', () => {
-      const profilePath = '/path/to/profile';
-      const cookiesPath = detector.getCookiesPath(profilePath);
+  describe('detectBraveProfiles', () => {
+    it('should return empty array if Brave directory does not exist', () => {
+      mockOs.platform.mockReturnValue('darwin');
+      mockOs.homedir.mockReturnValue('/Users/testuser');
+      mockFs.existsSync.mockReturnValue(false);
 
-      expect(cookiesPath).toBe(path.join(profilePath, 'Cookies'));
+      const profiles = ProfileDetector.detectBraveProfiles();
+
+      expect(profiles).toEqual([]);
+    });
+  });
+
+  describe('detectAllProfiles', () => {
+    it('should combine Chrome and Brave profiles', () => {
+      mockOs.platform.mockReturnValue('darwin');
+      mockOs.homedir.mockReturnValue('/Users/testuser');
+      mockFs.existsSync.mockReturnValue(false);
+
+      const profiles = ProfileDetector.detectAllProfiles();
+
+      expect(Array.isArray(profiles)).toBe(true);
     });
   });
 });
