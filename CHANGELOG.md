@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/pchuri/chrome-cookie-extractor/compare/v1.1.0...v1.1.1) (2025-07-15)
+
+
+### Bug Fixes
+
+* **decryptor:** accept Uint8Array/other buffers in decryptValue ([#1](https://github.com/pchuri/chrome-cookie-extractor/issues/1)) ([6c85dc0](https://github.com/pchuri/chrome-cookie-extractor/commit/6c85dc0c13668be1814bccce6de15d092623131d))
+
 # [1.1.0](https://github.com/pchuri/chrome-cookie-extractor/compare/v1.0.1...v1.1.0) (2025-06-30)
 
 
