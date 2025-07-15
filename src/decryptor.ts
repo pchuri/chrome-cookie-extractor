@@ -10,16 +10,23 @@ export class CookieDecryptor {
     'Edge Safe Storage'
   ];
 
-  static decryptValue(encryptedValue: Buffer): string {
+  /**
+   * Decrypt a cookie value that may be a Buffer, Uint8Array, or ArrayBuffer.
+   */
+  static decryptValue(encryptedValue: Buffer | Uint8Array | ArrayBuffer): string {
+    // Ensure we have a Buffer to work with
+    const buffer = Buffer.isBuffer(encryptedValue)
+      ? encryptedValue
+      : Buffer.from(encryptedValue as Uint8Array | ArrayBuffer);
     if (os.platform() !== 'darwin') {
       // Non-macOS platforms - return as is (might not be encrypted)
-      return encryptedValue.toString('utf8');
+      return buffer.toString('utf8');
     }
 
     try {
       // Check for Chrome v80+ encryption prefix
-      if (encryptedValue.subarray(0, 3).toString() === 'v10' || 
-          encryptedValue.subarray(0, 3).toString() === 'v11') {
+      if (buffer.subarray(0, 3).toString() === 'v10' || 
+          buffer.subarray(0, 3).toString() === 'v11') {
         
         // Get Chrome Safe Storage password from Keychain
         const password = this.getChromeSafeStoragePassword();
@@ -35,7 +42,7 @@ export class CookieDecryptor {
         const key = crypto.pbkdf2Sync(password, salt, iterations, keyLength, 'sha1');
 
         // Extract the encrypted data after removing v10/v11 prefix
-        const encryptedData = encryptedValue.subarray(3); // Remove v10/v11 prefix
+        const encryptedData = buffer.subarray(3); // Remove v10/v11 prefix
         
         // Use AES-CBC decryption based on pycookiecheat implementation
         try {
@@ -68,7 +75,7 @@ export class CookieDecryptor {
         return '[ENCRYPTED]';
       } else {
         // Older encryption format or unencrypted
-        const result = encryptedValue.toString('utf8');
+        const result = buffer.toString('utf8');
         // Check if it looks like valid cookie data (no null bytes)
         if (result && result.length > 0 && !result.includes('\0')) {
           return result;

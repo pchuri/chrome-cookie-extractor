@@ -48,6 +48,40 @@ describe('ProfileDetector', () => {
       expect(profiles[0]).toHaveProperty('path');
       expect(profiles[0]).toHaveProperty('cookiesPath');
     });
+
+    it('should detect Chrome profiles on win32', () => {
+      mockOs.platform.mockReturnValue('win32');
+      mockOs.homedir.mockReturnValue('C:/Users/test');
+      mockFs.existsSync.mockImplementation((p: any) => {
+        const s = p.toString();
+        if (s === 'C:/Users/test/AppData/Local/Google/Chrome/User Data') return true;
+        if (s === 'C:/Users/test/AppData/Local/Google/Chrome/User Data/Default/Cookies') return true;
+        return false;
+      });
+
+      const profiles = ProfileDetector.detectChromeProfiles();
+      expect(profiles.length).toBeGreaterThan(0);
+    });
+
+    it('should detect Chrome profiles on linux', () => {
+      mockOs.platform.mockReturnValue('linux');
+      mockOs.homedir.mockReturnValue('/home/test');
+      mockFs.existsSync.mockImplementation((p: any) => {
+        const s = p.toString();
+        if (s === '/home/test/.config/google-chrome') return true;
+        if (s === '/home/test/.config/google-chrome/Default/Cookies') return true;
+        return false;
+      });
+
+      const profiles = ProfileDetector.detectChromeProfiles();
+      expect(profiles.length).toBeGreaterThan(0);
+    });
+
+    it('should throw on unsupported platform', () => {
+      mockOs.platform.mockReturnValue('aix');
+      mockOs.homedir.mockReturnValue('/tmp');
+      expect(() => ProfileDetector.detectChromeProfiles()).toThrow();
+    });
   });
 
   describe('detectBraveProfiles', () => {
@@ -59,6 +93,34 @@ describe('ProfileDetector', () => {
       const profiles = ProfileDetector.detectBraveProfiles();
 
       expect(profiles).toEqual([]);
+    });
+
+    it('should detect Brave profiles on linux', () => {
+      mockOs.platform.mockReturnValue('linux');
+      mockOs.homedir.mockReturnValue('/home/test');
+      mockFs.existsSync.mockImplementation((p: any) => {
+        const s = p.toString();
+        if (s === '/home/test/.config/BraveSoftware/Brave-Browser') return true;
+        if (s === '/home/test/.config/BraveSoftware/Brave-Browser/Default/Cookies') return true;
+        return false;
+      });
+
+      const profiles = ProfileDetector.detectBraveProfiles();
+      expect(profiles.length).toBeGreaterThan(0);
+    });
+
+    it('should detect Brave profiles on win32', () => {
+      mockOs.platform.mockReturnValue('win32');
+      mockOs.homedir.mockReturnValue('C:/Users/test');
+      mockFs.existsSync.mockImplementation((p: any) => {
+        const s = p.toString();
+        if (s === 'C:/Users/test/AppData/Local/BraveSoftware/Brave-Browser/User Data') return true;
+        if (s === 'C:/Users/test/AppData/Local/BraveSoftware/Brave-Browser/User Data/Default/Cookies') return true;
+        return false;
+      });
+
+      const profiles = ProfileDetector.detectBraveProfiles();
+      expect(profiles.length).toBeGreaterThan(0);
     });
   });
 
