@@ -41,4 +41,22 @@ describe('CookieDecryptor', () => {
       expect(typeof result).toBe('string');
     });
   });
+
+  it('decrypts v10 value with keychain password', () => {
+    mockOs.platform.mockReturnValue('darwin');
+    const password = Buffer.from('mypassword', 'utf8');
+    jest.spyOn<any, any>(CookieDecryptor as any, 'getChromeSafeStoragePassword').mockReturnValue(password);
+
+    const crypto = require('crypto');
+    const salt = Buffer.from('saltysalt');
+    const key = crypto.pbkdf2Sync(password, salt, 1003, 16, 'sha1');
+    const iv = Buffer.alloc(16, ' ');
+    const cipher = crypto.createCipheriv('aes-128-cbc', key, iv);
+    cipher.setAutoPadding(true);
+    const encrypted = Buffer.concat([cipher.update('secret'), cipher.final()]);
+    const data = Buffer.concat([Buffer.from('v10'), encrypted]);
+
+    const result = CookieDecryptor.decryptValue(data);
+    expect(result).toBe('secret');
+  });
 });
