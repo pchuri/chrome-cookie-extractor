@@ -10,9 +10,14 @@ export class CookieDecryptor {
     'Edge Safe Storage'
   ];
 
-  static decryptValue(encryptedValue: Buffer | Uint8Array | any): string {
+  /**
+   * Decrypt a cookie value that may be a Buffer, Uint8Array, or ArrayBuffer.
+   */
+  static decryptValue(encryptedValue: Buffer | Uint8Array | ArrayBuffer): string {
     // Ensure we have a Buffer to work with
-    const buffer = Buffer.isBuffer(encryptedValue) ? encryptedValue : Buffer.from(encryptedValue);
+    const buffer = Buffer.isBuffer(encryptedValue)
+      ? encryptedValue
+      : Buffer.from(encryptedValue as Uint8Array | ArrayBuffer);
     if (os.platform() !== 'darwin') {
       // Non-macOS platforms - return as is (might not be encrypted)
       return buffer.toString('utf8');
