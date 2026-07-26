@@ -57,22 +57,14 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
     
-    - name: Use Node.js 22.x
+    - name: Use Node.js 18.x
       uses: actions/setup-node@v4
       with:
-        node-version: 22.x
+        node-version: 18.x
         cache: 'npm'
-
-    - name: Upgrade npm to latest
-      # The npm bundled with older Node calls the retired quick-audit endpoint
-      # (/-/npm/v1/security/audits/quick), which now returns a 400. The latest
-      # npm uses the bulk advisory endpoint and its updated fetch stack decodes
-      # the gzipped audit response correctly. (npm@latest needs Node >=22.22,
-      # satisfied by Node 22.x on the runner.)
-      run: npm install -g npm@latest
-
+    
     - name: Install dependencies
       run: npm ci
-
+    
     - name: Run security audit
       run: npm audit --audit-level high
