@@ -57,17 +57,18 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
     
-    - name: Use Node.js 18.x
+    - name: Use Node.js 22.x
       uses: actions/setup-node@v4
       with:
-        node-version: 18.x
+        node-version: 22.x
         cache: 'npm'
 
-    - name: Upgrade npm to latest
-      # The npm bundled with Node 18 still calls the retired quick-audit
-      # endpoint (/-/npm/v1/security/audits/quick), which now returns a 400.
-      # A modern npm uses the bulk advisory endpoint so `npm audit` works.
-      run: npm install -g npm@latest
+    - name: Upgrade npm to a version using the bulk advisory endpoint
+      # The npm bundled with older Node calls the retired quick-audit endpoint
+      # (/-/npm/v1/security/audits/quick), which now returns a 400. npm 11 uses
+      # the bulk advisory endpoint so `npm audit` works. (npm@latest/12 requires
+      # Node >=22.22, so pin 11 to keep the engine compatible with Node 22.x.)
+      run: npm install -g npm@11
 
     - name: Install dependencies
       run: npm ci
