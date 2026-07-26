@@ -1,0 +1,77 @@
+# OSV-Scanner ignore config for the `security` CI gate.
+#
+# SCOPE: This file ignores ONLY the specific advisory IDs listed below. It does
+# NOT blanket-ignore dev dependencies, ecosystems, or severities. Any NEW or
+# different advisory (runtime or dev, of any severity) will still fail the gate.
+#
+# WHY THESE ARE IGNORED (maintainer decision, 2026-07-26):
+# All six affected packages are reached SOLELY through the release-time
+# devDependency `@semantic-release/npm -> npm`, inside npm's frozen
+# `bundledDependencies`. Bundled deps are pinned at npm's own publish time and
+# CANNOT be remediated from this repo via `npm update` or `overrides`. They are
+# release-only: not present in the shipped runtime, nor exercised by the build
+# or test suite. Forcing a newer `npm` bundle was tested and rejected (it still
+# trails these advisories and requires Node >=22, breaking the 16/18/20 matrix).
+# All non-bundled production and dev advisories ARE fixed via bumps/overrides.
+
+# --- tar 7.5.11 (bundled via npm) ---
+[[IgnoredVulns]]
+id = "GHSA-23hp-3jrh-7fpw"
+reason = "tar@7.5.11 frozen in npm's bundledDependencies (@semantic-release/npm -> npm); release-only, not in runtime/build/test; unfixable via bump/override."
+
+[[IgnoredVulns]]
+id = "GHSA-8x88-c5mf-7j5w"
+reason = "tar@7.5.11 frozen in npm's bundledDependencies (@semantic-release/npm -> npm); release-only, not in runtime/build/test; unfixable via bump/override."
+
+[[IgnoredVulns]]
+id = "GHSA-gvwx-54wh-qm9j"
+reason = "tar@7.5.11 frozen in npm's bundledDependencies (@semantic-release/npm -> npm); release-only, not in runtime/build/test; unfixable via bump/override."
+
+[[IgnoredVulns]]
+id = "GHSA-r292-9mhp-454m"
+reason = "tar@7.5.11 frozen in npm's bundledDependencies (@semantic-release/npm -> npm); release-only, not in runtime/build/test; unfixable via bump/override."
+
+[[IgnoredVulns]]
+id = "GHSA-vmf3-w455-68vh"
+reason = "tar@7.5.11 frozen in npm's bundledDependencies (@semantic-release/npm -> npm); release-only, not in runtime/build/test; unfixable via bump/override."
+
+[[IgnoredVulns]]
+id = "GHSA-w8wr-v893-vjvp"
+reason = "tar@7.5.11 frozen in npm's bundledDependencies (@semantic-release/npm -> npm); release-only, not in runtime/build/test; unfixable via bump/override."
+
+# --- brace-expansion 2.0.2 (bundled via npm) ---
+[[IgnoredVulns]]
+id = "GHSA-3jxr-9vmj-r5cp"
+reason = "brace-expansion@2.0.2 frozen in npm's bundledDependencies (@semantic-release/npm -> npm); release-only, not in runtime/build/test; unfixable via bump/override. Non-bundled copies are overridden to ^5.0.8."
+
+[[IgnoredVulns]]
+id = "GHSA-f886-m6hf-6m8v"
+reason = "brace-expansion@2.0.2 frozen in npm's bundledDependencies (@semantic-release/npm -> npm); release-only, not in runtime/build/test; unfixable via bump/override. Non-bundled copies are overridden to ^5.0.8."
+
+[[IgnoredVulns]]
+id = "GHSA-mh99-v99m-4gvg"
+reason = "brace-expansion@2.0.2 frozen in npm's bundledDependencies (@semantic-release/npm -> npm); release-only, not in runtime/build/test; unfixable via bump/override. Non-bundled copies are overridden to ^5.0.8."
+
+# --- picomatch 4.0.3 (bundled via npm) ---
+[[IgnoredVulns]]
+id = "GHSA-3v7f-55p6-f55p"
+reason = "picomatch@4.0.3 frozen in npm's bundledDependencies (@semantic-release/npm -> npm); release-only, not in runtime/build/test; unfixable via bump/override."
+
+[[IgnoredVulns]]
+id = "GHSA-c2c7-rcm5-vvqj"
+reason = "picomatch@4.0.3 frozen in npm's bundledDependencies (@semantic-release/npm -> npm); release-only, not in runtime/build/test; unfixable via bump/override."
+
+# --- sigstore 3.1.0 (bundled via npm) ---
+[[IgnoredVulns]]
+id = "GHSA-52v5-jr5w-gjxr"
+reason = "sigstore@3.1.0 frozen in npm's bundledDependencies (@semantic-release/npm -> npm); release-only, not in runtime/build/test; unfixable via bump/override."
+
+# --- @sigstore/core 2.0.0 (bundled via npm) ---
+[[IgnoredVulns]]
+id = "GHSA-jfc7-64v2-mr8c"
+reason = "@sigstore/core@2.0.0 frozen in npm's bundledDependencies (@semantic-release/npm -> npm); release-only, not in runtime/build/test; unfixable via bump/override."
+
+# --- ip-address 10.1.0 (bundled via npm) ---
+[[IgnoredVulns]]
+id = "GHSA-v2v4-37r5-5v8g"
+reason = "ip-address@10.1.0 frozen in npm's bundledDependencies (@semantic-release/npm -> npm); release-only, not in runtime/build/test; unfixable via bump/override."
