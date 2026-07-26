@@ -20,8 +20,24 @@ program
   .option('--json', 'Send data as JSON and set content-type')
   .option('--follow-redirects', 'Follow HTTP redirects')
   .option('--insecure', 'Allow insecure SSL connections')
+  .option('--max-time <seconds>', 'Maximum time in seconds for the whole operation (passed through to curl)')
+  .option('--connect-timeout <seconds>', 'Maximum time in seconds for the connection phase (passed through to curl)')
   .action(async (url: string, options) => {
     try {
+      // Validate curl passthrough timing options (must be positive numbers)
+      const validatePositiveSeconds = (value: string, flag: string): number => {
+        const parsed = Number(value);
+        if (!Number.isFinite(parsed) || parsed <= 0) {
+          throw new Error(`Invalid value for ${flag}: "${value}" (expected a positive number of seconds)`);
+        }
+        return parsed;
+      };
+      if (options.maxTime !== undefined) {
+        validatePositiveSeconds(options.maxTime, '--max-time');
+      }
+      if (options.connectTimeout !== undefined) {
+        validatePositiveSeconds(options.connectTimeout, '--connect-timeout');
+      }
       // Extract domain from URL
       const urlObj = new URL(url);
       const domain = urlObj.hostname;
@@ -104,7 +120,16 @@ program
       if (options.insecure) {
         curlArgs.push('-k');
       }
-      
+
+      // Passthrough curl timing options
+      if (options.maxTime !== undefined) {
+        curlArgs.push('--max-time', String(options.maxTime));
+      }
+
+      if (options.connectTimeout !== undefined) {
+        curlArgs.push('--connect-timeout', String(options.connectTimeout));
+      }
+
       if (options.output) {
         curlArgs.push('-o', options.output);
       }
@@ -160,6 +185,7 @@ Examples:
   $ auth-curl https://example.com/api -X POST -d '{"key":"value"}' --json
   $ auth-curl https://myaccount.google.com/profile -o profile.html
   $ auth-curl https://private-site.com -H "Accept: application/json" -v
+  $ auth-curl https://example.com/slow --max-time 20 --connect-timeout 5
 `);
 
 if (require.main === module) {

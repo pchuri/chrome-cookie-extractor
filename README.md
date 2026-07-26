@@ -62,6 +62,9 @@ auth-curl https://private-site.com/data.json -o data.json
 
 # Verbose output to see what's happening
 auth-curl https://example.com -v
+
+# Set curl timeouts (passed through to curl)
+auth-curl https://example.com/slow --max-time 20 --connect-timeout 5
 ```
 
 ### Traditional: chrome-cookies
@@ -118,6 +121,8 @@ curl $COOKIES https://example.com/api
 | `--json` | Send data as JSON and set content-type |
 | `--follow-redirects` | Follow HTTP redirects |
 | `--insecure` | Allow insecure SSL connections |
+| `--max-time <seconds>` | Maximum time in seconds for the whole operation (passed through to curl) |
+| `--connect-timeout <seconds>` | Maximum time in seconds for the connection phase (passed through to curl) |
 
 ### chrome-cookies Options
 
