@@ -63,12 +63,13 @@ jobs:
         node-version: 22.x
         cache: 'npm'
 
-    - name: Upgrade npm to a version using the bulk advisory endpoint
+    - name: Upgrade npm to latest
       # The npm bundled with older Node calls the retired quick-audit endpoint
-      # (/-/npm/v1/security/audits/quick), which now returns a 400. npm 11 uses
-      # the bulk advisory endpoint so `npm audit` works. (npm@latest/12 requires
-      # Node >=22.22, so pin 11 to keep the engine compatible with Node 22.x.)
-      run: npm install -g npm@11
+      # (/-/npm/v1/security/audits/quick), which now returns a 400. The latest
+      # npm uses the bulk advisory endpoint and its updated fetch stack decodes
+      # the gzipped audit response correctly. (npm@latest needs Node >=22.22,
+      # satisfied by Node 22.x on the runner.)
+      run: npm install -g npm@latest
 
     - name: Install dependencies
       run: npm ci
