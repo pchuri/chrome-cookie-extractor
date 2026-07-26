@@ -1,3 +1,16 @@
+# [1.2.0](https://github.com/pchuri/chrome-cookie-extractor/compare/v1.1.1...v1.2.0) (2026-07-26)
+
+
+### Bug Fixes
+
+* **decryptor:** correct macOS v10 cookie decryption (wrong key + M130 domain hash) ([#3](https://github.com/pchuri/chrome-cookie-extractor/issues/3)) ([f4f6ed5](https://github.com/pchuri/chrome-cookie-extractor/commit/f4f6ed576a05a2ea4bec1fb3da56e369d0ca2b02))
+
+
+### Features
+
+* **auth-curl:** add --max-time and --connect-timeout passthrough to curl ([#4](https://github.com/pchuri/chrome-cookie-extractor/issues/4)) ([5e46715](https://github.com/pchuri/chrome-cookie-extractor/commit/5e467155ec060931a0a64e25bd603967fcf6b3c8))
+* **auth-curl:** forward unknown curl flags to the underlying curl ([#6](https://github.com/pchuri/chrome-cookie-extractor/issues/6)) ([6739734](https://github.com/pchuri/chrome-cookie-extractor/commit/67397345a1316d3796019173ef9e0c7a79b2fd5d))
+
 ## [1.1.1](https://github.com/pchuri/chrome-cookie-extractor/compare/v1.1.0...v1.1.1) (2025-07-15)
 
 
