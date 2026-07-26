@@ -56,15 +56,14 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-    
-    - name: Use Node.js 18.x
-      uses: actions/setup-node@v4
+
+    # npm audit is broken against the public npm registry: the advisories/bulk
+    # endpoint returns a gzip body without a Content-Encoding header, so npm
+    # fails to parse it on every npm version. Use OSV-Scanner instead, which
+    # reads the committed lockfile against the independent OSV.dev database and
+    # blocks the job on discovered vulnerabilities.
+    - name: Run OSV vulnerability scan
+      uses: google/osv-scanner-action/osv-scanner-action@v2.3.8
       with:
-        node-version: 18.x
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Run security audit
-      run: npm audit --audit-level high
+        scan-args: |-
+          --lockfile=package-lock.json
