@@ -12,8 +12,14 @@ export class CookieDecryptor {
 
   /**
    * Decrypt a cookie value that may be a Buffer, Uint8Array, or ArrayBuffer.
+   *
+   * @param hostKey The cookie's host_key. When provided, it is used to detect and
+   *   strip the 32-byte SHA-256(host_key) domain-hash prefix that Chrome M130+
+   *   prepends to the plaintext before encryption. The prefix is only stripped when
+   *   the leading 32 bytes match sha256(host_key), so pre-M130 values (which have no
+   *   prefix) are left untouched.
    */
-  static decryptValue(encryptedValue: Buffer | Uint8Array | ArrayBuffer): string {
+  static decryptValue(encryptedValue: Buffer | Uint8Array | ArrayBuffer, hostKey?: string): string {
     // Ensure we have a Buffer to work with
     const buffer = Buffer.isBuffer(encryptedValue)
       ? encryptedValue
@@ -62,7 +68,18 @@ export class CookieDecryptor {
           if (paddingLength && paddingLength <= 16) {
             decrypted = decrypted.subarray(0, decrypted.length - paddingLength);
           }
-          
+
+          // Chrome M130+ prepends a 32-byte SHA-256(host_key) domain hash to the
+          // plaintext before encryption. Strip it only when the leading 32 bytes
+          // actually match sha256(host_key); otherwise (older Chrome without the
+          // prefix) leave the value untouched for backward compatibility.
+          if (hostKey && decrypted.length >= 32) {
+            const domainHash = crypto.createHash('sha256').update(hostKey).digest();
+            if (decrypted.subarray(0, 32).equals(domainHash)) {
+              decrypted = decrypted.subarray(32);
+            }
+          }
+
           const result = decrypted.toString('utf8');
           
           if (result && result.length > 0 && result.length < 10000 && !result.includes('\0')) {
@@ -99,7 +116,9 @@ export class CookieDecryptor {
         
         const password = result.trim();
         if (password) {
-          return Buffer.from(password, 'base64');
+          // The macOS v10 scheme uses the Keychain password STRING as-is for
+          // PBKDF2 (it is NOT base64-encoded key material). Pass it through raw.
+          return Buffer.from(password, 'utf8');
         }
       } catch (error) {
         // Fall back to the comprehensive approach
@@ -131,7 +150,8 @@ export class CookieDecryptor {
 
             const password = result.trim();
             if (password) {
-              return Buffer.from(password, 'base64');
+              // Use the Keychain password STRING as-is for PBKDF2 (see above).
+              return Buffer.from(password, 'utf8');
             }
           } catch (error) {
             // Continue trying other combinations
