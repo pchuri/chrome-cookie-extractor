@@ -84,3 +84,85 @@ describe('auth-curl timing options', () => {
     exitSpy.mockRestore();
   });
 });
+
+describe('auth-curl passthrough of unknown curl flags', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('forwards an unknown combined short flag (-sL) to curl', async () => {
+    const program = loadProgram();
+    await program.parseAsync(
+      ['-sL', 'https://example.com'],
+      { from: 'user' }
+    );
+
+    expect(mockedExecSync).toHaveBeenCalledTimes(1);
+    const command = mockedExecSync.mock.calls[0][0] as string;
+    expect(command).toContain('-sL');
+    // URL is still recognized as the request target.
+    expect(command).toContain('"https://example.com"');
+  });
+
+  it('forwards --max-time together with -sL and preserves the URL', async () => {
+    const program = loadProgram();
+    await program.parseAsync(
+      ['--max-time', '25', '-sL', 'https://example.com'],
+      { from: 'user' }
+    );
+
+    const command = mockedExecSync.mock.calls[0][0] as string;
+    // --max-time is a first-class option; -sL is forwarded.
+    expect(command).toContain('--max-time 25');
+    expect(command).toContain('-sL');
+    expect(command).toContain('"https://example.com"');
+  });
+
+  it('forwards an unknown long flag with its value in order', async () => {
+    const program = loadProgram();
+    await program.parseAsync(
+      ['--retry', '3', 'https://example.com'],
+      { from: 'user' }
+    );
+
+    const command = mockedExecSync.mock.calls[0][0] as string;
+    // Flag and value stay together and in order.
+    expect(command).toMatch(/--retry'?\s+'?3/);
+    expect(command).toContain('"https://example.com"');
+  });
+
+  it('does not let a passthrough token break out of curl argv', async () => {
+    const program = loadProgram();
+    await program.parseAsync(
+      ["--evil=$(rm -rf /)", 'https://example.com'],
+      { from: 'user' }
+    );
+
+    const command = mockedExecSync.mock.calls[0][0] as string;
+    // The dangerous token is single-quoted so the shell cannot interpret it.
+    expect(command).toContain(`'--evil=$(rm -rf /)'`);
+  });
+
+  it('keeps existing first-class option handling unchanged', async () => {
+    const program = loadProgram();
+    await program.parseAsync(
+      [
+        '-H', 'Accept: application/json',
+        '-X', 'POST',
+        '-d', '{"a":1}',
+        '--json',
+        '-o', 'out.html',
+        'https://example.com',
+      ],
+      { from: 'user' }
+    );
+
+    const command = mockedExecSync.mock.calls[0][0] as string;
+    expect(command).toContain('-H "Accept: application/json"');
+    expect(command).toContain('-X POST');
+    expect(command).toContain('-d "{"a":1}"');
+    expect(command).toContain('-H "Content-Type: application/json"');
+    expect(command).toContain('-o out.html');
+    expect(command).toContain('"https://example.com"');
+  });
+});
