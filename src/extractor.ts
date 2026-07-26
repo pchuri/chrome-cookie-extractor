@@ -107,7 +107,7 @@ export class ChromeCookieExtractor {
               
               if (hasEncryptedValue && row.encrypted_value) {
                 // Try to decrypt the encrypted value
-                const decryptedValue = CookieDecryptor.decryptValue(row.encrypted_value);
+                const decryptedValue = CookieDecryptor.decryptValue(row.encrypted_value, row.host_key);
                 finalValue = decryptedValue !== '[ENCRYPTED]' ? decryptedValue : row.value || '[ENCRYPTED]';
               } else {
                 finalValue = row.value || '';
@@ -195,7 +195,7 @@ export class ChromeCookieExtractor {
                 
                 if (hasEncryptedValue && row.encrypted_value) {
                   // Try to decrypt the encrypted value
-                  const decryptedValue = CookieDecryptor.decryptValue(row.encrypted_value);
+                  const decryptedValue = CookieDecryptor.decryptValue(row.encrypted_value, row.host_key);
                   finalValue = decryptedValue !== '[ENCRYPTED]' ? decryptedValue : row.value || '[ENCRYPTED]';
                 } else {
                   finalValue = row.value || '';
