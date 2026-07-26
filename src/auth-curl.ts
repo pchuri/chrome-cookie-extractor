@@ -7,14 +7,64 @@ import chalk from 'chalk';
 
 const program = new Command();
 
+// Quote an arbitrary token for safe inclusion in the shell command string that
+// is handed to execSync. Passthrough tokens come straight from the user, so
+// they must never be able to break out of curl's argv (no shell injection).
+function shellQuote(token: string): string {
+  // Close the quote, emit an escaped single quote, reopen: ' -> '\''
+  return `'${token.replace(/'/g, '\'\\\'\'')}'`;
+}
+
+// A token looks like a request target if it carries an explicit URL scheme
+// (e.g. https://…). auth-curl needs an absolute URL to derive the cookie domain.
+function looksLikeUrl(token: string): boolean {
+  return /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(token);
+}
+
+// Split the tokens commander did NOT consume (its `args`: unknown curl flags,
+// their values, and the URL) into the request URL and the flags to forward to
+// curl verbatim. Known auth-curl options and their values are already stripped
+// by commander, so nothing here is double-passed.
+//
+// Ambiguity note: we can't know an unknown flag's arity, so a value that itself
+// looks like a URL could be mistaken for the target. We pick the LAST url-like
+// token as the target, matching the usual `auth-curl [flags] URL` ordering.
+function splitLeftoverArgs(leftover: string[]): { url?: string; passthrough: string[] } {
+  let urlIndex = -1;
+  for (let i = 0; i < leftover.length; i++) {
+    if (looksLikeUrl(leftover[i])) {
+      urlIndex = i;
+    }
+  }
+  // Fall back to the last bare (non-option) operand if nothing had a scheme.
+  if (urlIndex === -1) {
+    for (let i = 0; i < leftover.length; i++) {
+      if (!leftover[i].startsWith('-')) {
+        urlIndex = i;
+      }
+    }
+  }
+  if (urlIndex === -1) {
+    return { passthrough: leftover.slice() };
+  }
+  const passthrough = leftover.slice(0, urlIndex).concat(leftover.slice(urlIndex + 1));
+  return { url: leftover[urlIndex], passthrough };
+}
+
 program
   .name('auth-curl')
-  .description('curl with automatic Chrome cookie authentication')
+  .description('curl with automatic Chrome cookie authentication (unknown flags are forwarded to curl)')
   .version('1.0.0')
+  .allowUnknownOption(true)
   .argument('<url>', 'URL to request')
   .option('-v, --verbose', 'Show detailed output')
   .option('-o, --output <file>', 'Write output to file instead of stdout')
-  .option('-H, --header <header>', 'Add custom header (can be used multiple times)', [])
+  .option(
+    '-H, --header <header>',
+    'Add custom header (can be used multiple times)',
+    (value: string, previous: string[]) => previous.concat([value]),
+    []
+  )
   .option('-X, --request <method>', 'HTTP method (GET, POST, etc.)', 'GET')
   .option('-d, --data <data>', 'HTTP POST data')
   .option('--json', 'Send data as JSON and set content-type')
@@ -22,8 +72,15 @@ program
   .option('--insecure', 'Allow insecure SSL connections')
   .option('--max-time <seconds>', 'Maximum time in seconds for the whole operation (passed through to curl)')
   .option('--connect-timeout <seconds>', 'Maximum time in seconds for the connection phase (passed through to curl)')
-  .action(async (url: string, options) => {
+  .action(async (_urlArg: string, options, command) => {
     try {
+      // commander mis-assigns the positional `<url>` when unknown flags are
+      // present, so derive the real URL and the forwarded flags from the
+      // tokens it did not consume.
+      const { url, passthrough } = splitLeftoverArgs(command.args as string[]);
+      if (!url) {
+        throw new Error('No request URL was provided');
+      }
       // Validate curl passthrough timing options (must be positive numbers)
       const validatePositiveSeconds = (value: string, flag: string): number => {
         const parsed = Number(value);
@@ -133,7 +190,13 @@ program
       if (options.output) {
         curlArgs.push('-o', options.output);
       }
-      
+
+      // Forward any curl flags auth-curl does not handle itself, in order.
+      // Each token is shell-quoted so it can only ever land in curl's argv.
+      for (const token of passthrough) {
+        curlArgs.push(shellQuote(token));
+      }
+
       // Add URL
       curlArgs.push(`"${url}"`);
       
@@ -179,6 +242,11 @@ program
 
 // Add help examples
 program.addHelpText('after', `
+Passthrough:
+  Any curl flag not listed above is forwarded, in order, to the underlying curl
+  invocation (e.g. -sL, --retry 3, --http2). This lets auth-curl act as a drop-in
+  curl wrapper while still injecting Chrome cookies automatically.
+
 Examples:
   $ auth-curl https://github.com/user/repo
   $ auth-curl https://api.github.com/user -v
@@ -186,6 +254,7 @@ Examples:
   $ auth-curl https://myaccount.google.com/profile -o profile.html
   $ auth-curl https://private-site.com -H "Accept: application/json" -v
   $ auth-curl https://example.com/slow --max-time 20 --connect-timeout 5
+  $ auth-curl -sL --retry 3 https://example.com   # extra flags pass through
 `);
 
 if (require.main === module) {

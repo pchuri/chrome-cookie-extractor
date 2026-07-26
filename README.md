@@ -65,7 +65,16 @@ auth-curl https://example.com -v
 
 # Set curl timeouts (passed through to curl)
 auth-curl https://example.com/slow --max-time 20 --connect-timeout 5
+
+# Any flag auth-curl does not handle itself is forwarded straight to curl,
+# so it works as a drop-in curl wrapper (e.g. -sL, --retry, --http2)
+auth-curl -sL --retry 3 https://example.com
 ```
+
+> **Passthrough:** `auth-curl` forwards any unknown curl flag (in order, with its
+> value) to the underlying `curl` invocation, on top of injecting your Chrome
+> cookies and default headers. This lets curl-style commands and generated
+> checkers (e.g. `auth-curl --max-time 25 -sL "$URL"`) work unchanged.
 
 ### Traditional: chrome-cookies
 
